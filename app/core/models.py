@@ -82,10 +82,13 @@ class User(PermissionsMixin, AbstractBaseUser, AbstractBaseModel):
     target_skills = models.CharField(max_length=255, blank=True)
 
     # desired_roles = models.ManyToManyField("Role")
-    # availability = models.IntegerField()  # not in ERD, is a separate table. Want to confirm to remove this
     # referred_by = models.ForeignKey(referrer, on_delete=models.PROTECT) # FK to referrer
 
-    linkedin_account = models.CharField(max_length=255, blank=True)
+    linkedin_account = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Linkedin URL ending. 3-100 letters or numbers",
+    )
     github_handle = models.CharField(max_length=255, blank=True)
     slack_id = models.CharField(max_length=11, blank=True)
 
@@ -94,13 +97,11 @@ class User(PermissionsMixin, AbstractBaseUser, AbstractBaseModel):
     texting_ok = models.BooleanField(default=True)
 
     time_zone = TimeZoneField(blank=True, use_pytz=False, default="America/Los_Angeles")
-    # conduct = models.BooleanField()  # not in ERD. Maybe we should remove this
 
     objects = UserManager()
 
     USERNAME_FIELD = "username"
     EMAIL_FIELD = "preferred_email"
-    REQUIRED_FIELDS = ["email"]  # used only on createsuperuser
 
     @property
     def is_django_user(self):
@@ -116,7 +117,7 @@ class Project(AbstractBaseModel):
     """
 
     name = models.CharField(max_length=255, unique=True)
-    description = models.CharField(max_length=255, blank=True)
+    description = models.TextField(blank=True)
     completed_at = models.DateTimeField("Completed at", null=True, blank=True)
     github_org_id = models.CharField(
         max_length=8,
@@ -131,7 +132,7 @@ class Project(AbstractBaseModel):
 "Authorization: token [gh_PAT]" \
 https://api.github.com/repos/[org]/[repo]',
     )
-    github_primary_url = models.CharField(max_length=255, blank=True)
+    github_primary_url = models.URLField(blank=True)
     # current_status_id = models.ForeignKey("status", on_delete=models.PROTECT)
     hide = models.BooleanField(default=True)
     # location_id = models.ForeignKey("location", on_delete=models.PROTECT)
