@@ -6,6 +6,35 @@ First, we identify an issue to work on from the [Onboarding page](https://github
 
 ## Add the model in django
 
+```python
+class RecurringEvent(AbstractBaseModel):
+    """
+    Recurring Events
+    """
+
+
+    name = models.CharField(max_length=255)
+    start_time = models.TimeField("Start", null=True, blank=True)
+    duration_in_min = models.IntegerField(null=True, blank=True)
+    video_conference_url = models.URLField(blank=True)
+    additional_info = models.TextField(blank=True)
+
+
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    # location_id = models.ForeignKey("Location", on_delete=models.DO_NOTHING)
+    # event_type_id = models.ForeignKey("EventType", on_delete=models.DO_NOTHING)
+    # brigade_id = models.ForeignKey("Brigade", on_delete=models.DO_NOTHING)
+    # day_of_week = models.ForeignKey("DayOfWeek", on_delete=models.DO_NOTHING)
+    # must_roles = models.ManyToManyField("Role")
+    # should_roles = models.ManyToManyField("Role")
+    # could_roles = models.ManyToManyField("Role")
+    # frequency_id = models.ForeignKey("Frequency", on_delete=models.DO_NOTHING)
+
+
+    def __str__(self):
+        return f"{self.name}"
+```
+
 https://github.com/fyliu/peopledepot/blob/acd8898e7b0364913cc8ae3f9973dfd846adedcc/app/core/models.py#L150-L172
 
 1. We inherit all models from AbstractBaseModel, which provides a `uuid` primary key, `created_at`, and `updated_at` timestamps. In the Github issue, these fields might be called `id`, `created`, and `updated`. There's no need to add those.
@@ -31,6 +60,12 @@ Since we defined the `__str__` function, we need to write a test for it.
 
    Fixtures are reusable code that can be used in multiple tests by declaring them as parameters of the test case. In this example, we show both defining a fixture (recurring_event) and using another fixture (project).
 
+   ```python
+   @pytest.fixture
+   def recurring_event(project):
+       return RecurringEvent.objects.create(name="Test Recurring Event", project=project)
+   ```
+
    https://github.com/fyliu/peopledepot/blob/acd8898e7b0364913cc8ae3f9973dfd846adedcc/app/core/tests/conftest.py#L40-L42
 
    1. We name the fixture after the model name.
@@ -40,6 +75,11 @@ Since we defined the `__str__` function, we need to write a test for it.
 1. Add a test case
 
    When creating Django models, there's no need to test the CRUD functionality since Django itself is well-tested and we can expect it to generate the correct CRUD functionality. Feel free to write some tests for practice. What really needs testing are any custom code that's not part of Django. Sometimes we need to override the default Django behavior and that should be tested.
+
+   ```python
+   def test_recurring_event(recurring_event):
+       assert str(recurring_event) == "Test Recurring Event"
+   ```
 
    https://github.com/fyliu/peopledepot/blob/acd8898e7b0364913cc8ae3f9973dfd846adedcc/app/core/tests/test_models.py#L17-L18
 
@@ -59,9 +99,23 @@ Django comes with an admin site interface that allows admin users to view and ch
 
 1. Import the new model
 
+   ```python
+   from .models import Project, RecurringEvent, User
+   ```
+
    https://github.com/fyliu/peopledepot/blob/acd8898e7b0364913cc8ae3f9973dfd846adedcc/app/core/admin.py#L8
 
 1. Register the model
+
+   ```python
+   @admin.register(RecurringEvent)
+   class RecurringEventAdmin(admin.ModelAdmin):
+       list_display = (
+           "name",
+           "start_time",
+           "duration_in_min",
+       )
+   ```
 
    https://github.com/fyliu/peopledepot/blob/acd8898e7b0364913cc8ae3f9973dfd846adedcc/app/core/admin.py#L110-L116
 
@@ -75,6 +129,10 @@ Django comes with an admin site interface that allows admin users to view and ch
 1. See the [contributing doc](https://github.com/fyliu/peopledepot/blob/development/docs/contributing.md#:~:text=Browse%20to%20the%20web%20admin%20interface%20at%20http%3A//localhost%3A8000/admin/) for how to view the admin interface.
 
 1. Example of a custom field
+
+   ```python
+   time_zone = TimeZoneField(blank=True, use_pytz=False, default="America/Los_Angeles")
+   ```
 
    https://github.com/fyliu/peopledepot/blob/acd8898e7b0364913cc8ae3f9973dfd846adedcc/app/core/models.py#L95
 
@@ -95,9 +153,36 @@ This is code that serializes objects into strings for the API endpoints, and des
 
 1. Import the new model
 
+   ```python
+   from core.models import Project, RecurringEvent, User
+   ```
+
    https://github.com/fyliu/peopledepot/blob/acd8898e7b0364913cc8ae3f9973dfd846adedcc/app/core/api/serializers.py#L4
 
 1. Add a serializer class
+
+   ```python
+   class RecurringEventSerializer(serializers.ModelSerializer):
+       """Used to retrieve recurring_event info"""
+
+
+       class Meta:
+           model = RecurringEvent
+           fields = (
+               "uuid",
+               "name",
+               "start_time",
+               "duration_in_min",
+               "video_conference_url",
+               "additional_info",
+               "project",
+           )
+           read_only_fields = (
+               "uuid",
+               "created_at",
+               "updated_at",
+           )
+   ```
 
    https://github.com/fyliu/peopledepot/blob/acd8898e7b0364913cc8ae3f9973dfd846adedcc/app/core/api/serializers.py#L78-L96
 
@@ -106,6 +191,10 @@ This is code that serializes objects into strings for the API endpoints, and des
    1. uuid, created_at, and updated_at are automatic and always read-only.
 
 1. Custom data fields may need extra code in the serializer.
+
+   ```python
+   time_zone = TimeZoneSerializerField(use_pytz=False)
+   ```
 
    https://github.com/fyliu/peopledepot/blob/acd8898e7b0364913cc8ae3f9973dfd846adedcc/app/core/api/serializers.py#L10
 
@@ -125,9 +214,15 @@ Viewset defines the set of CRUD API endpoints for the model.
 
 1. Import the serializer
 
+   ```python
+   ```
+
    https://github.com/fyliu/peopledepot/blob/acd8898e7b0364913cc8ae3f9973dfd846adedcc/app/core/api/views.py#L16
 
 1. Add the [viewset](https://www.django-rest-framework.org/api-guide/viewsets/) and CRUD API endpoint descriptions.
+
+   ```python
+   ```
 
    https://github.com/fyliu/peopledepot/blob/ee0506ddaf8ca7f09fbbadceb35d2fa361fb0a32/app/core/api/views.py#L107-L118
 
@@ -140,6 +235,9 @@ Viewset defines the set of CRUD API endpoints for the model.
 
 1. Here's a more complex API doc example
 
+   ```python
+   ```
+
    https://github.com/fyliu/peopledepot/blob/acd8898e7b0364913cc8ae3f9973dfd846adedcc/app/core/api/views.py#L35-L75
 
    1. Define strings for all 5 actions: create, retrieve, partial_update, update, destroy, list.
@@ -151,6 +249,9 @@ Viewset defines the set of CRUD API endpoints for the model.
 
 1. Add any query params
 
+   ```python
+   ```
+
    https://github.com/fyliu/peopledepot/blob/acd8898e7b0364913cc8ae3f9973dfd846adedcc/app/core/api/views.py#L75-L98
 
    1. The get_queryset function overrides the default and lets us filter the objects returned to the client if they pass in a query param.
@@ -161,9 +262,15 @@ Viewset defines the set of CRUD API endpoints for the model.
 
 1. Import the viewset
 
+   ```python
+   ```
+
    https://github.com/fyliu/peopledepot/blob/acd8898e7b0364913cc8ae3f9973dfd846adedcc/app/core/api/urls.py#L4-L9
 
 1. [Register](https://www.django-rest-framework.org/api-guide/routers/#usage) the viewset to the [router](https://www.django-rest-framework.org/api-guide/routers/)
+
+   ```python
+   ```
 
    https://github.com/fyliu/peopledepot/blob/acd8898e7b0364913cc8ae3f9973dfd846adedcc/app/core/api/urls.py#L14
 
@@ -179,9 +286,16 @@ For the CRUD operations, since we're using `ModelViewSet` where all the actions 
 
 1. Import API URL
 
+   ```python
+   ```
+
    https://github.com/fyliu/peopledepot/blob/acd8898e7b0364913cc8ae3f9973dfd846adedcc/app/core/tests/test_api.py#L11
 
 1. Add test case
+
+   ```python
+   ```
+
    https://github.com/fyliu/peopledepot/blob/acd8898e7b0364913cc8ae3f9973dfd846adedcc/app/core/tests/test_api.py#L70-L81
 
    1. Use `auth_client` instead of `admin_client`
