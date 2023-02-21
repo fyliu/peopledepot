@@ -208,7 +208,7 @@ def test_create_location(auth_client):
         "city": "Los Angeles",
         "state": "CA",
         "zip": "90210",
-        "phone": "3105551212"
+        "phone": "3105551212",
     }
     res = auth_client.post(LOCATION_URL, payload)
     assert res.status_code == status.HTTP_201_CREATED

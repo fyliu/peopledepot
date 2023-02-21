@@ -12,17 +12,17 @@ from rest_framework.permissions import IsAuthenticated
 
 from ..models import Faq
 from ..models import FaqViewed
+from ..models import Location
 from ..models import Project
 from ..models import RecurringEvent
 from ..models import SponsorPartner
-from ..models import Location
 from .serializers import FaqSerializer
 from .serializers import FaqViewedSerializer
+from .serializers import LocationSerializer
 from .serializers import ProjectSerializer
 from .serializers import RecurringEventSerializer
 from .serializers import SponsorPartnerSerializer
 from .serializers import UserSerializer
-from .serializers import LocationSerializer
 
 
 class UserProfileAPIView(RetrieveModelMixin, GenericAPIView):
@@ -199,4 +199,3 @@ class LocationViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
-    

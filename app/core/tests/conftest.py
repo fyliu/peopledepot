@@ -3,10 +3,10 @@ from rest_framework.test import APIClient
 
 from ..models import Faq
 from ..models import FaqViewed
+from ..models import Location
 from ..models import Project
 from ..models import RecurringEvent
 from ..models import SponsorPartner
-from ..models import Location
 
 
 @pytest.fixture

@@ -3,11 +3,11 @@ from timezone_field.rest_framework import TimeZoneSerializerField
 
 from core.models import Faq
 from core.models import FaqViewed
+from core.models import Location
 from core.models import Project
 from core.models import RecurringEvent
 from core.models import SponsorPartner
 from core.models import User
-from core.models import Location
 
 
 class UserSerializer(serializers.ModelSerializer):

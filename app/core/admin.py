@@ -7,11 +7,11 @@ from django.utils.translation import gettext_lazy as _
 
 from .models import Faq
 from .models import FaqViewed
+from .models import Location
 from .models import Project
 from .models import RecurringEvent
 from .models import SponsorPartner
 from .models import User
-from .models import Location
 
 
 class UserCreationForm(DefaultUserCreationForm):
