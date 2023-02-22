@@ -173,4 +173,6 @@ class LocationSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         )
-        
+
+
+LocationSerializer._declared_fields["zip"] = serializers.CharField(source="zipcode")

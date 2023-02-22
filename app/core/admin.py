@@ -156,6 +156,6 @@ class Location(admin.ModelAdmin):
         "address_line_2",
         "city",
         "state",
-        "zip",
-        "phone"
+        "zipcode",
+        "phone",
     )
