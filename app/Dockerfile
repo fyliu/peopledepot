@@ -1,8 +1,11 @@
 # pull official base image
 FROM python:3.10-bullseye
 
+ARG workdir_prefix=/usr/src
+ENV WORKDIR_PREFIX $workdir_prefix
+
 # set work directory
-WORKDIR /usr/src/app
+WORKDIR $WORKDIR_PREFIX/app
 
 # set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -25,11 +28,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # copy entrypoint.sh
 COPY ./entrypoint.sh .
-RUN sed -i 's/\r$//g' /usr/src/app/entrypoint.sh \
-  && chmod +x /usr/src/app/entrypoint.sh
+RUN sed -i 's/\r$//g' $WORKDIR_PREFIX/app/entrypoint.sh \
+  && chmod +x $WORKDIR_PREFIX/app/entrypoint.sh
 
 # copy project
 COPY . .
 
 # run entrypoint.sh
-ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
+ENTRYPOINT ["sh", "-c", "$WORKDIR_PREFIX/app/entrypoint.sh python $@"]
