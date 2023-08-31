@@ -12,6 +12,13 @@ then
 fi
 
 # python manage.py flush --no-input
+set -x
+pwd
+ls
+echo $@
+echo "python manage.py runserver 0.0.0.0:8000"
+#python manage.py runserver 0.0.0.0:8000
+set +x
 # python manage.py migrate
 
 exec "$@"
