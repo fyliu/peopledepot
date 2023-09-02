@@ -42,4 +42,4 @@ RUN sed -i 's/\r$//g' $WORKDIR_PREFIX/app/entrypoint.sh \
 COPY . .
 
 # run entrypoint.sh
-ENTRYPOINT ["sh", "-c", "$WORKDIR_PREFIX/app/entrypoint.sh python $@"]
+ENTRYPOINT ["sh", "-c", "$WORKDIR_PREFIX/app/entrypoint.sh $0 $@"]
