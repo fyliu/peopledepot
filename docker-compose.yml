@@ -32,6 +32,23 @@ services:
       - POSTGRES_USER=people_depot
       - POSTGRES_PASSWORD=people_depot
       - POSTGRES_DB=people_depot_dev
+  tools:
+    # docker-compose up tools
+    # docker-compose run tools sh -c "pre-commit run --all-files"
+    # docker-compose run tools sh -c "pre-commit run --all-files check-django-migrations"
+    image: pd-tools:local
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      args:
+        wokdir_prefix: /usr/src
+    privileged: true
+    # docker-compose --profile tools up # starts the tools service
+    # docker-compose up starts the services that don't have a profile
+    profiles: ["tools"]
+    volumes:
+      - ./:/usr/src/project/
+      - /run/user/1000/docker.sock:/var/run/docker.sock
 
 volumes:
   postgres_data:

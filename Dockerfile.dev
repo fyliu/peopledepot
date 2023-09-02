@@ -1,0 +1,37 @@
+# pull official base image
+FROM python:3.10-alpine3.18
+
+#ENV workdir_prefix /usr/src
+ARG workdir_prefix=/usr/src
+ENV WORKDIR_PREFIX $workdir_prefix
+
+# set work directory
+WORKDIR $WORKDIR_PREFIX/project
+
+# set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONPYCACHEPREFIX=/root/.cache/pycache/ \
+    PIP_DISABLE_PIP_VERISON_CHECK=ON \
+    PIP_DEFAULT_TIMEOUT=100
+
+# install system dependencies
+RUN \
+  --mount=type=cache,target=/var/cache/apk \
+  apk add --update-cache \
+  git=2.40.1-r0 \
+  bash=5.2.15-r5 \
+  build-base \
+  docker-compose=2.17.3-r5 \
+  docker=23.0.6-r4
+  # musl-dev libc-dev gcc
+
+# install dependencies
+COPY requirements.dev requirements.txt
+RUN \
+  --mount=type=cache,target=/root/.cache \
+  pip install -r requirements.txt
+
+# cache pre-commit hooks setup
+COPY .pre-commit-config.yaml .
+RUN \
+  git init . && pre-commit install-hooks
