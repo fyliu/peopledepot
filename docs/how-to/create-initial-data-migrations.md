@@ -90,14 +90,15 @@ The sheet should be formatted like so:
 - Create a script in the same directory named `<number>_<model in lowercase>_seed.py` with the following contents and
     replace `<model in lower case>` and `<name of last script>` with appropriate values:
 
-    ```py
+    ```python
     from django.db import migrations
 
-    from core.models import <model in CamelCase>
+    from core.models import ModelInCamelCase
 
 
     def run(__code__, __reverse_code__):
-        <paste everything in seed script here>
+        # paste everything in seed script here
+        pass
 
 
     class Migration(migrations.Migration):
@@ -109,7 +110,7 @@ The sheet should be formatted like so:
 
     For example:
 
-    ```py
+    ```python
     from django.db import migrations
 
     from core.models import BookType
