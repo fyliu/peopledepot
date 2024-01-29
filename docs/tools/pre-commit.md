@@ -24,6 +24,21 @@ It's recommended to install "global" tools via pipx, which installs packages in 
 
     Pre-commit is now set up to check your files whenever you commit or push code.
 
+1. For MacOS users you might need to install `Python openSSL certificate`
+
+    - You can do this with 
+
+        ```bash
+        cd /Applications/Python\ 3.6/
+        ./Install\ Certificates.command
+        ```
+    
+    - Or install it with pip
+
+        ```bash
+        pip install certifi
+        ```
+
 1. Test by adding an empty commit
 
     ```bash
