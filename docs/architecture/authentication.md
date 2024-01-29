@@ -32,6 +32,23 @@ These are the steps involved:
 1. Take the access_token from the URL and make a GET request to http://localhost:8000/api/v1/me (Headers key=Authorization, value=Bearer <token>)
 1. Backend should return the user's profile data
 
+## Authentication Guide for Cognito
+
+Before following the below instruction, please ensure you have docker up and running and the build-image running, you can run it with the command `./scripts/buildrun.sh`.
+
+1. Login (or register first then login) to a cognito account [here](https://hackforla-vrms-dev.auth.us-west-2.amazoncognito.com/login?client_id=3e3bi1ct2ks9rcktrde8v60v3u&response_type=token&scope=openid&redirect_uri=http://localhost:8000/admin). Do not worry if you see error messages - you will be using the url to authenticate.
+1. Copy the URL when it redirects, and now in the new tab open the [online tool](https://regexr.com/6ro69).
+1. You will notice `^.*access_token=(.*)&expires_in.*$` this is the regex used to extract the access_tokens.
+    - Clear the top box and paste the URL text into it. Make sure you have `Replace` selected and `$1` in the bottom box, The upper box should show there's 1 match.
+    - The bottom box's content is the extracted `access_token`.
+1. Open [ModHeader](https://modheader.com/modheader/download)(for best results we recommend using Google Chrome).
+    - If the icon is hidden, `click on the Puzzle icon in the upper right of the browser to see it`.
+    - Select `Authorization` then type the word `Bearer` and paste the token into [ModHeader](https://modheader.com/modheader/download), it should follow the format: `Authorization: Bearer <access_token>`.
+1. To make sure that you are correctly authorized, you can go to the following api-interfaces.
+    - Local hosted [DjangoRestFramework](http://localhost:8000/api/v1/me)
+    - Explore APIs using local hosted [Swagger](http://localhost:8000/api/schema/swagger-ui)
+    - A local hosted [redoc ui](http://localhost:8000/api/schema/redoc) is also available
+
 ## Notes
 
 The tutorial is 2 years old now (from 2020) and there's been some change made since then.
