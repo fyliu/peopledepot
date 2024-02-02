@@ -20,6 +20,21 @@ These are the steps involved:
 1. Backend verifies token and processes request
 1. User gets response from authenticated API
 
+```mermaid
+sequenceDiagram
+  autonumber
+  participant Cognito User Pool
+  participant Django Backend
+  participant User Frontend
+  Django Backend->>+Cognito User Pool: getJWKS()
+  Cognito User Pool-->>-Django Backend: JWKS
+  User Frontend->>+Cognito User Pool: login(user, pass)
+  Cognito User Pool-->>-User Frontend: id_token, access_token
+  User Frontend->>+Django Backend:get(request, access_token)
+  Django Backend->>Django Backend: Verify token against JWKS and process request
+  Django Backend-->>-User Frontend:response from authenticated API
+```
+
 ## Current Dev Setup
 
 1. Created app client called "backend within the vrms-dev user pool, with ALLOW_ADMIN_USER_PASSWORD_AUTH enabled
