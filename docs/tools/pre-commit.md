@@ -26,13 +26,13 @@ It's recommended to install "global" tools via pipx, which installs packages in 
 
 1. For MacOS users you might need to install `Python openSSL certificate`
 
-    - You can do this with 
+    - You can do this with
 
         ```bash
         cd /Applications/Python\ 3.6/
         ./Install\ Certificates.command
         ```
-    
+
     - Or install it with pip
 
         ```bash

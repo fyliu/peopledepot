@@ -20,6 +20,22 @@ These are the steps involved:
 1. Backend verifies token and processes request
 1. User gets response from authenticated API
 
+``` mermaid
+sequenceDiagram
+  autonumber
+  participant Cognito User Pool
+  participant Backend
+  participant User
+  Backend->>+Cognito User Pool: getJWKS()
+  Cognito User Pool-->>-Backend: JWKS
+  User->>+Cognito User Pool: login(user, pass)
+  Cognito User Pool-->>-User: id_token, access_token
+  User->>+Backend:get(request, access_token)
+  Backend->>Backend: Verify token against JWKS and process request
+  Backend-->>-User:response from authenticated API
+```
+
+
 ## Current Dev Setup
 
 1. Created app client called "backend within the vrms-dev user pool, with ALLOW_ADMIN_USER_PASSWORD_AUTH enabled
@@ -46,7 +62,7 @@ Before following the below instruction, please ensure you have docker up and run
 1. To make sure that you are correctly authorized, you can go to the following api-interfaces.
     - Local hosted [DjangoRestFramework](http://localhost:8000/api/v1/me)
     - Explore APIs using local hosted [Swagger](http://localhost:8000/api/schema/swagger-ui)
-    - A local hosted [redoc ui](http://localhost:8000/api/schema/redoc) is also available 
+    - A local hosted [redoc ui](http://localhost:8000/api/schema/redoc) is also available
 
 ## Notes
 
