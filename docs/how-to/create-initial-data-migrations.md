@@ -11,7 +11,7 @@ These are the steps:
 
 ### Prerequisites
 
-You must have Docker installed
+You must be able to run the project locally via docker or otherwise. This guide assumes you're running it from docker-compose via the `buildrun.sh` script.
 
 The initial data exists in a Google spreadsheet, such as [this one for People Depot][pd-data-spreadsheet]. There should be individual sheets named after the model names the data correspond to, such as `ProgramArea - Data`. The sheet name is useful for us to identify the model it corresponds to.
 
@@ -55,7 +55,7 @@ The sheet should be formatted like so:
 
 1. Check that there's a new file called `app/core/scripts/programarea_seed.py` and that it looks correct
 
-    1. You can run it to verify, but will need to remove that data if you care about restoring the database state
+    1. You can run it to verify, but will need to remove that data if you care about restoring your local database state
 
     1. Run this command to run the script
 
@@ -85,10 +85,10 @@ The sheet should be formatted like so:
 
 ## Combine Script in Migration
 
-- Look for name of the last migration file in `core/data/migrations` directory
+- Look for name of the last migration file in `app/data/migrations` directory
 
 - Create a script in the same directory named `<number>_<modelnameinlowercase>_seed.py` with the following contents and
-    replace `<model in lower case>` and `<name of last script>` with appropriate values:
+    replace `ModelNameInPascalCase` and `<name of last script>` with appropriate values:
 
     ```py
     from django.db import migrations
@@ -104,7 +104,7 @@ The sheet should be formatted like so:
 
     class Migration(migrations.Migration):
         initial = True
-        dependencies = [("data", "<name of last script, or contents of max_migration.txt>")]
+        dependencies = [("data", "<name of last script>")]
 
 
     operations = [migrations.RunPython(run, migrations.RunPython.noop)]

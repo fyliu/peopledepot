@@ -32,7 +32,10 @@ def to_values_str(_input):
 def to_keys_str(_input):
     values = []
     for key in _input.keys():
-        values.append(f"{key}")
+        if key in ["id"]:
+            values.append("uuid")
+        else:
+            values.append(f"{key}")
 
     return ", ".join(values)
 
@@ -40,7 +43,10 @@ def to_keys_str(_input):
 def to_keys_indexes_str(_input):
     values = []
     for key in _input.keys():
-        values.append(f"{key}={key}")
+        if key in ["id"]:
+            values.append("uuid=uuid")
+        else:
+            values.append(f"{key}={key}")
 
     return ", ".join(values)
 
