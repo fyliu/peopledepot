@@ -8,7 +8,9 @@ WORKDIR /usr/src/app
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV PYTHONPYCACHEPREFIX=/root/.cache/pycache/
+ENV PIP_CACHE_DIR=/var/cache/buildkit/pip
 
+RUN mkdir -p $PIP_CACHE_DIR
 RUN rm -f /etc/apt/apt.conf.d/docker-clean; echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
 
 # install system dependencies
@@ -18,7 +20,8 @@ RUN \
   apt-get update \
   && apt-get install --no-install-recommends -yqq \
   graphviz=2.42.2-5 \
-  && rm -rf /var/lib/apt/lists/*
+  && rm -rf /var/lib/apt/lists/* \
+  && apt-get clean
 
 # install dependencies
 COPY ./requirements.txt .
