@@ -9,11 +9,12 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV PYTHONPYCACHEPREFIX=/root/.cache/pycache/
 
-RUN rm -f /etc/apt/apt.conf.d/docker-clean
+RUN rm -f /etc/apt/apt.conf.d/docker-clean; echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
 
 # install system dependencies
 RUN \
-  --mount=type=cache,target=/var/cache/apt \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked \
   apt-get update \
   && apt-get install --no-install-recommends -yqq \
   graphviz=2.42.2-5 \
@@ -23,7 +24,7 @@ RUN \
 COPY ./requirements.txt .
 # hadolint ignore=DL3042
 RUN \
-  --mount=type=cache,target=/root/.cache/ \
+  --mount=type=cache,target=/root/.cache \
   pip install uv==0.1.15 \
   && uv pip install --system -r requirements.txt
 

@@ -22,3 +22,4 @@ For apt, the cache directory is `/var/cache/apt/`.
     - [buildkit mount the cache](https://vsupalov.com/buildkit-cache-mount-dockerfile/)
     - [proper usage of mount cache](https://dev.doroshev.com/blog/docker-mount-type-cache/)
     - [mount cache reference](https://docs.docker.com/engine/reference/builder/#run---mounttypecache)
+    - [buildkit dockerfile reference](https://github.com/moby/buildkit/blob/master/frontend/dockerfile/docs/reference.md)
