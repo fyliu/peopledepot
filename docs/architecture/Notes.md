@@ -11,3 +11,51 @@
     ```
 
     The solution is to disable the Authentication header and Google drive will work as normal.
+
+## Git graphs
+
+### Feature branch and merge
+
+```mermaid
+gitGraph
+   commit
+   commit
+   branch feature
+   checkout feature
+   commit
+   commit
+   checkout main
+   merge feature
+   commit
+   commit
+```
+
+### Feature branches and merge
+
+```mermaid
+---
+config:
+  gitGraph:
+    parallelCommits: true
+---
+gitGraph:
+   commit
+   commit
+   branch feature
+   checkout feature
+   commit
+   commit
+   checkout main
+   commit
+   branch feature2
+   checkout feature2
+   commit
+   checkout main
+   merge feature
+   commit
+   commit
+   checkout feature2
+   merge main
+    checkout main
+    merge feature2
+```
