@@ -14,8 +14,8 @@ from ..models import ProgramArea
 from ..models import Project
 from ..models import Sdg
 from ..models import Skill
+from ..models import StackElement
 from ..models import StackElementType
-from ..models import Technology
 
 
 @pytest.fixture
@@ -145,8 +145,8 @@ def skill():
 
 
 @pytest.fixture
-def technology():
-    return Technology.objects.create(name="Test Technology")
+def stack_element():
+    return StackElement.objects.create(name="Test Stack Element")
 
 
 @pytest.fixture
