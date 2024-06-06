@@ -48,14 +48,16 @@ class User(PermissionsMixin, AbstractBaseUser, AbstractBaseModel):
     # Common fields #
     # For cognito-users username will contain `sub` claim from jwt token
     # (unique identifier (UUID) for the authenticated user).
-    # For django-users it will contain username which will be used to login into django-admin site
+    # For django-users it will contain username which will be used to login
+    # into django-admin site
     username = models.CharField(
         "Username", max_length=255, unique=True, validators=[username_validator]
     )
     is_active = models.BooleanField("Active", default=True)
 
     # Cognito-user related fields #
-    # some additional fields which will be filled-out only for users registered via Cognito
+    # some additional fields which will be filled-out only for users
+    # registered via Cognito
     pass
 
     # Django-user related fields #
@@ -83,7 +85,8 @@ class User(PermissionsMixin, AbstractBaseUser, AbstractBaseModel):
 
     # desired_roles = models.ManyToManyField("Role")
     # availability = models.IntegerField()  # not in ERD, is a separate table. Want to confirm to remove this
-    # referred_by = models.ForeignKey(referrer, on_delete=models.PROTECT) # FK to referrer
+    # referred_by = models.ForeignKey(referrer, on_delete=models.PROTECT) # FK
+    # to referrer
 
     linkedin_account = models.CharField(max_length=255, blank=True)
     github_handle = models.CharField(max_length=255, blank=True)
@@ -94,7 +97,8 @@ class User(PermissionsMixin, AbstractBaseUser, AbstractBaseModel):
     texting_ok = models.BooleanField(default=True)
 
     time_zone = TimeZoneField(blank=True, use_pytz=False, default="America/Los_Angeles")
-    # conduct = models.BooleanField()  # not in ERD. Maybe we should remove this
+    # conduct = models.BooleanField()  # not in ERD. Maybe we should remove
+    # this
 
     objects = UserManager()
 
@@ -170,7 +174,7 @@ class Event(AbstractBaseModel):
         return f"{self.name}"
 
 
-class SponsorPartner(AbstractBaseModel):
+class Affiliate(AbstractBaseModel):
     """
     Dictionary of sponsors and partners
     """
@@ -182,7 +186,7 @@ class SponsorPartner(AbstractBaseModel):
     is_org_sponsor = models.BooleanField(null=True)
     is_org_partner = models.BooleanField(null=True)
 
-    # PK of this model is the ForeignKey for project_partner_xref
+    # PK of this model is the ForeignKey for project_affiliate_xref
 
     def __str__(self):
         return f"{self.partner_name}"
@@ -329,3 +333,36 @@ class Sdg(AbstractBaseModel):
 
     def __str__(self):
         return f"{self.name}"
+
+
+class Affiliation(AbstractBaseModel):
+    """
+    Sponsor/partner relationships stored in this table are project-dependent.
+    They can be both a sponsor and a partner for the same project,
+    so if is_sponsor is true, they are a project partner,
+    if is_sponsor is true, they are a project sponsor.
+    """
+
+    affiliate = models.ForeignKey(Affiliate, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    ended_at = models.DateTimeField("Ended at", null=True, blank=True)
+    is_sponsor = models.BooleanField(null=True)
+    is_partner = models.BooleanField(null=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["project", "affiliate"], name="unique_project_affiliate"
+            )
+        ]
+        db_table = "project_affiliate_xref"
+
+    def __str__(self):
+        if self.is_sponsor is True and self.is_partner is True:
+            return f"Sponsor {self.project} and Partner {self.affiliate}"
+        elif self.is_sponsor is True and self.is_partner is False:
+            return f"Sponsor {self.project}"
+        elif self.is_sponsor is False and self.is_partner is True:
+            return f"Partner {self.affiliate}"
+        else:
+            return "Neither a partner or a sponsor"
