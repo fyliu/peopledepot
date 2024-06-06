@@ -20,7 +20,7 @@ These are the steps involved:
 1. Backend verifies token and processes request
 1. User gets response from authenticated API
 
-``` mermaid
+```mermaid
 sequenceDiagram
   autonumber
   participant Cognito User Pool
@@ -35,7 +35,6 @@ sequenceDiagram
   Backend-->>-User:response from authenticated API
 ```
 
-
 ## Current Dev Setup
 
 1. Created app client called "backend within the vrms-dev user pool, with ALLOW_ADMIN_USER_PASSWORD_AUTH enabled
@@ -49,6 +48,7 @@ sequenceDiagram
 1. Backend should return the user's profile data
 
 ## Authentication Guide for Cognito
+
 Before following the below instruction, please ensure you have docker up and running and the build-image running, you can run it with the command `./scripts/buildrun.sh`.
 
 1. Login (or register first then login) to a cognito account [here](https://hackforla-vrms-dev.auth.us-west-2.amazoncognito.com/login?client_id=3e3bi1ct2ks9rcktrde8v60v3u&response_type=token&scope=openid&redirect_uri=http://localhost:8000/admin). Do not worry if you see error messages - you will be using the url to authenticate.
