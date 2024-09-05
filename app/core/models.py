@@ -197,6 +197,12 @@ https://api.github.com/repos/[org]/[repo]',
         related_name="projects",
         blank=True,
         through="ProjectProgramAreaXref",
+    affiliates = models.ManyToManyField(
+        "Affiliate",
+        related_name="projects",
+        related_query_name="project",
+        blank=True,
+        through="Affiliation",
     )
 
     def __str__(self):
@@ -238,8 +244,8 @@ class Affiliate(AbstractBaseModel):
     Dictionary of sponsors and partners
     """
 
-    partner_name = models.CharField(max_length=255)
-    partner_logo = models.URLField(blank=True)
+    name = models.CharField(max_length=255)
+    logo = models.URLField(blank=True)
     is_active = models.BooleanField(null=True)
     url = models.URLField(blank=True)
     is_org_sponsor = models.BooleanField(null=True)
@@ -248,7 +254,7 @@ class Affiliate(AbstractBaseModel):
     # PK of this model is the ForeignKey for project_affiliate_xref
 
     def __str__(self):
-        return f"{self.partner_name}"
+        return f"{self.name}"
 
 
 class Faq(AbstractBaseModel):

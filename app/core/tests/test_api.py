@@ -211,7 +211,7 @@ def test_create_event_type(auth_client):
 
 def test_create_affiliate(auth_client):
     payload = {
-        "partner_name": "Test Partner",
+        "name": "Test Partner",
         "partner_logo": "http://www.logourl.com",
         "is_active": True,
         "url": "http://www.testurl.org",
