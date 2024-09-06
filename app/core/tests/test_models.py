@@ -2,9 +2,11 @@ import re
 
 import pytest
 
+from ..models import Affiliate
 from ..models import Event
 from ..models import PracticeArea
 from ..models import ProgramArea
+from ..models import Project
 from ..models import ProjectProgramAreaXref
 from ..models import ProjectSdgXref
 from ..models import ProjectStatus
@@ -145,6 +147,21 @@ def test_affiliation_is_neither_partner_and_sponsor(affiliation4):
     assert xref_instance.is_sponsor is False
     assert xref_instance.is_partner is False
     assert str(xref_instance) == "Neither a partner or a sponsor"
+
+
+def test_affiliation_relationships():
+    alice = Affiliate.objects.create(name="Alice")
+    bob = Affiliate.objects.create(name="Bob")
+    pd = Project.objects.create(name="People Depot")
+
+    assert pd.affiliates.count() == 0
+    alice.projects.add(pd)
+    assert pd.affiliates.count() == 1
+    assert alice in pd.affiliates.all()
+
+    assert bob.projects.count() == 0
+    pd.affiliates.add(bob)
+    assert bob.projects.count() == 1
 
 
 def test_check_type(check_type):
