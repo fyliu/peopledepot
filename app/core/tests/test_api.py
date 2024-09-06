@@ -291,13 +291,14 @@ def test_create_skill(auth_client):
     assert res.data["name"] == payload["name"]
 
 
-def test_create_stack_element(auth_client):
+def test_create_stack_element(auth_client, stack_element_type):
     payload = {
         "name": "Test StackElement",
         "description": "StackElement description",
         "url": "http://www.testurl.org",
         "logo": "http://www.logourl.com",
         "active": True,
+        "element_type": stack_element_type.pk,
     }
     res = auth_client.post(STACK_ELEMENT_URL, payload)
     assert res.status_code == status.HTTP_201_CREATED
