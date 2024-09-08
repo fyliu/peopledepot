@@ -12,7 +12,6 @@ from core.models import PermissionType
 from core.models import PracticeArea
 from core.models import ProgramArea
 from core.models import Project
-from core.models import ProjectProgramAreaXref
 from core.models import Sdg
 from core.models import Skill
 from core.models import StackElementType
@@ -79,6 +78,8 @@ class UserSerializer(serializers.ModelSerializer):
 class ProjectSerializer(serializers.ModelSerializer):
     """Used to retrieve project info"""
 
+    program_areas = serializers.StringRelatedField(many=True)
+
     class Meta:
         model = Project
         fields = (
@@ -95,6 +96,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             "image_logo",
             "image_hero",
             "image_icon",
+            "program_areas",
         )
         read_only_fields = (
             "uuid",
@@ -205,9 +207,11 @@ LocationSerializer._declared_fields["zip"] = serializers.CharField(source="zipco
 class ProgramAreaSerializer(serializers.ModelSerializer):
     """Used to retrieve program_area info"""
 
+    projects = serializers.StringRelatedField(many=True)
+
     class Meta:
         model = ProgramArea
-        fields = ("uuid", "name", "description", "image")
+        fields = ("uuid", "name", "description", "image", "projects")
         read_only_fields = ("uuid", "created_at", "updated_at")
 
 
@@ -329,14 +333,3 @@ class CheckTypeSerializer(serializers.ModelSerializer):
         model = CheckType
         fields = ("uuid", "name", "description")
         read_only_fields = ("uuid", "created_at", "updated_at")
-
-
-class ProjectProgramAreaXrefSerializer(serializers.ModelSerializer):
-    """
-    Used to retrieve ProjectProgramAreaXref
-    """
-
-    class Meta:
-        model = ProjectProgramAreaXref
-        fields = ("uuid", "project_id", "program_area_id", "created_date")
-        read_only_fields = ("uuid", "created_date")

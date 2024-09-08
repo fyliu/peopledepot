@@ -144,6 +144,12 @@ https://api.github.com/repos/[org]/[repo]',
     image_logo = models.URLField(blank=True)
     image_hero = models.URLField(blank=True)
     image_icon = models.URLField(blank=True)
+    program_areas = models.ManyToManyField(
+        "ProgramArea",
+        related_name="projects",
+        blank=True,
+        db_table="project_program_area_xref",
+    )
 
     def __str__(self):
         return f"{self.name}"
@@ -383,12 +389,3 @@ class CheckType(AbstractBaseModel):
 
     def __str__(self):
         return f"{self.name}"
-
-
-class ProjectProgramAreaXref(AbstractBaseModel):
-    project_id = models.ForeignKey(Project, on_delete=models.CASCADE)
-    program_area_id = models.ForeignKey(ProgramArea, on_delete=models.CASCADE)
-    created_date = models.DateTimeField("Created at", null=True, blank=True)
-
-    def __str__(self):
-        return f"Project Id: {self.project_id}, Program area Id: {self.program_area_id}"

@@ -16,7 +16,6 @@ from .models import PermissionType
 from .models import PracticeArea
 from .models import ProgramArea
 from .models import Project
-from .models import ProjectProgramAreaXref
 from .models import Sdg
 from .models import Skill
 from .models import StackElementType
@@ -115,21 +114,13 @@ class UserAdmin(DefaultUserAdmin):
 
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
+    filter_horizontal = ("program_areas",)
     list_display = (
         "name",
         "hide",
         "created_at",
         "updated_at",
         "completed_at",
-    )
-
-
-@admin.register(ProjectProgramAreaXref)
-class ProjectProgramAreaXrefAdmin(admin.ModelAdmin):
-    list_display = (
-        "project_id",
-        "program_area_id",
-        "created_date",
     )
 
 
@@ -191,7 +182,11 @@ class Location(admin.ModelAdmin):
 
 @admin.register(ProgramArea)
 class ProgramAreaAdmin(admin.ModelAdmin):
-    list_display = ("name", "description", "image")
+    list_display = (
+        "name",
+        "description",
+        "image",
+    )
 
 
 @admin.register(Skill)

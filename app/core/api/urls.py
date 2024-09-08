@@ -11,7 +11,6 @@ from .views import LocationViewSet
 from .views import PermissionTypeViewSet
 from .views import PracticeAreaViewSet
 from .views import ProgramAreaViewSet
-from .views import ProjectProgramAreaXrefViewSet
 from .views import ProjectViewSet
 from .views import SdgViewSet
 from .views import SkillViewSet
@@ -43,11 +42,6 @@ router.register(
     basename="affiliation",
 )
 router.register(r"check-types", CheckTypeViewSet, basename="check-type")
-router.register(
-    r"project-program-area-xrefs",
-    ProjectProgramAreaXrefViewSet,
-    basename="project-program-area-xref",
-)
 
 urlpatterns = [
     path("me/", UserProfileAPIView.as_view(), name="my_profile"),

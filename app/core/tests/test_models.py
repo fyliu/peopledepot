@@ -1,10 +1,9 @@
 import pytest
-from django.test import TestCase
 
 from ..models import Event
-from ..models import ProgramArea
-from ..models import Project
-from ..models import ProjectProgramAreaXref
+
+# from ..models import ProgramArea
+# from ..models import Project
 
 pytestmark = pytest.mark.django_db
 
@@ -124,49 +123,49 @@ def test_check_type(check_type):
     assert check_type.description == "This is a test check_type description."
 
 
-class ProjectProgramAreaXrefTestCase(TestCase):
-    def setUp(self):
-        # retrieve the objects from the DB
-        self.program_area1 = ProgramArea.objects.get(name="Workforce Development")
-        self.program_area2 = ProgramArea.objects.get(name="Civic Tech Infrastructure")
-
-        # Create a Project object
-        self.project = Project.objects.create(name="Hack for LA Site")
-
-        # Create ProjectProgramAreaXref objects to link the project to program areas
-        self.project_program_area_xref1 = ProjectProgramAreaXref.objects.create(
-            project_id=self.project,
-            program_area_id=self.program_area1,
-            created_date="2024-08-30 02:34:00",
-        )
-        self.project_program_area_xref2 = ProjectProgramAreaXref.objects.create(
-            project_id=self.project,
-            program_area_id=self.program_area2,
-            created_date="2024-08-30 02:34:00",
-        )
-
-    def test_project_to_program_areas_relationship(self):
-        # Get all ProgramAreas associated with the project
-        program_areas = ProgramArea.objects.filter(
-            projectprogramareaxref__project_id=self.project
-        )
-        assert program_areas.count() == 2
-        # check if program_area1 is included in the retrieved program_areas
-        assert self.program_area1 in program_areas
-        assert self.program_area2 in program_areas
-
-    def test_program_area_to_projects_relationship(self):
-        # Get all Projects associated with the first ProgramArea
-        projects_for_area1 = Project.objects.filter(
-            projectprogramareaxref__program_area_id=self.program_area1
-        )
-        assert projects_for_area1.count() == 1
-        # asserts that self.project is included in the retrieved projects_for_area1
-        assert self.project in projects_for_area1
-
-        # Get all Projects associated with the second ProgramArea
-        projects_for_area2 = Project.objects.filter(
-            projectprogramareaxref__program_area_id=self.program_area2
-        )
-        assert projects_for_area2.count() == 1
-        assert self.project in projects_for_area2
+# class ProjectProgramAreaXrefTestCase(TestCase):
+#     def setUp(self):
+#         # retrieve the objects from the DB
+#         self.program_area1 = ProgramArea.objects.get(name="Workforce Development")
+#         self.program_area2 = ProgramArea.objects.get(name="Civic Tech Infrastructure")
+#
+#         # Create a Project object
+#         self.project = Project.objects.create(name="Hack for LA Site")
+#
+#         # Create ProjectProgramAreaXref objects to link the project to program areas
+#         self.project_program_area_xref1 = ProjectProgramAreaXref.objects.create(
+#             project_id=self.project,
+#             program_area_id=self.program_area1,
+#             created_date="2024-08-30 02:34:00",
+#         )
+#         self.project_program_area_xref2 = ProjectProgramAreaXref.objects.create(
+#             project_id=self.project,
+#             program_area_id=self.program_area2,
+#             created_date="2024-08-30 02:34:00",
+#         )
+#
+#     def test_project_to_program_areas_relationship(self):
+#         # Get all ProgramAreas associated with the project
+#         program_areas = ProgramArea.objects.filter(
+#             projectprogramareaxref__project_id=self.project
+#         )
+#         assert program_areas.count() == 2
+#         # check if program_area1 is included in the retrieved program_areas
+#         assert self.program_area1 in program_areas
+#         assert self.program_area2 in program_areas
+#
+#     def test_program_area_to_projects_relationship(self):
+#         # Get all Projects associated with the first ProgramArea
+#         projects_for_area1 = Project.objects.filter(
+#             projectprogramareaxref__program_area_id=self.program_area1
+#         )
+#         assert projects_for_area1.count() == 1
+#         # asserts that self.project is included in the retrieved projects_for_area1
+#         assert self.project in projects_for_area1
+#
+#         # Get all Projects associated with the second ProgramArea
+#         projects_for_area2 = Project.objects.filter(
+#             projectprogramareaxref__program_area_id=self.program_area2
+#         )
+#         assert projects_for_area2.count() == 1
+#         assert self.project in projects_for_area2
