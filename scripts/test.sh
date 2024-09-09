@@ -10,4 +10,5 @@ docker-compose exec -T web python manage.py makemigrations --check
 # run tests and show code coverage
 # filter tests using -k <filter>
 # ex: test.sh -k program_area --no-cov
+# ex: test.sh -m only --no-cov # runs only tests marked with 'only'
 docker-compose exec -T web pytest "$@"
