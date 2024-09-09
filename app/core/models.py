@@ -150,6 +150,12 @@ https://api.github.com/repos/[org]/[repo]',
         blank=True,
         db_table="project_program_area_xref",
     )
+    affiliates = models.ManyToManyField(
+        "Affiliate",
+        related_name="projects",
+        blank=True,
+        through="Affiliation",
+    )
 
     def __str__(self):
         return f"{self.name}"

@@ -1,5 +1,6 @@
 import pytest
 
+from ..models import Affiliate
 from ..models import Event
 from ..models import ProgramArea
 
@@ -121,7 +122,6 @@ def test_check_type(check_type):
     assert check_type.description == "This is a test check_type description."
 
 
-@pytest.mark.only
 def test_project_program_areas_relationship(project):
     cti = ProgramArea.objects.get(name="Civic Tech Infrastructure")
     wfd = ProgramArea.objects.get(name="Workforce Development")
@@ -140,3 +140,24 @@ def test_project_program_areas_relationship(project):
     assert project.program_areas.count() == 1
     assert not project.program_areas.contains(cti)
     assert not cti.projects.contains(project)
+
+
+@pytest.mark.only
+def test_project_affiliates_relationship(project):
+    bc = Affiliate.objects.create(name="Big Corp")
+    lc = Affiliate.objects.create(name="Little Corp")
+
+    project.affiliates.add(bc)
+    assert project.affiliates.count() == 1
+    assert project.affiliates.contains(bc)
+    assert bc.projects.contains(project)
+
+    project.affiliates.add(lc)
+    assert project.affiliates.count() == 2
+    assert project.affiliates.contains(lc)
+    assert lc.projects.contains(project)
+
+    project.affiliates.remove(bc)
+    assert project.affiliates.count() == 1
+    assert not project.affiliates.contains(bc)
+    assert not bc.projects.contains(project)
