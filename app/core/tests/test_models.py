@@ -2,6 +2,7 @@ import re
 
 import pytest
 
+from ..models import Affiliate
 from ..models import Event
 from ..models import PracticeArea
 from ..models import ProgramArea
@@ -327,3 +328,24 @@ def test_user_practice_area_relationship(user, user2):
     assert user2.practice_area_secondary.count() == 0
     assert not user2.practice_area_secondary.contains(project_management_practice_area)
     assert not project_management_practice_area.secondary_users.contains(user2)
+
+
+@pytest.mark.only
+def test_project_affiliates_relationship(project):
+    bc = Affiliate.objects.create(name="Big Corp")
+    lc = Affiliate.objects.create(name="Little Corp")
+
+    project.affiliates.add(bc)
+    assert project.affiliates.count() == 1
+    assert project.affiliates.contains(bc)
+    assert bc.projects.contains(project)
+
+    project.affiliates.add(lc)
+    assert project.affiliates.count() == 2
+    assert project.affiliates.contains(lc)
+    assert lc.projects.contains(project)
+
+    project.affiliates.remove(bc)
+    assert project.affiliates.count() == 1
+    assert not project.affiliates.contains(bc)
+    assert not bc.projects.contains(project)
