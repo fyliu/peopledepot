@@ -5,7 +5,7 @@ Thank you for volunteering your time!
 Here are the recommended steps for contributing:
 
 1. Join the team
-2. change
+1. change
 1. Take an issue
 1. Fork, modify, and submit pull request
 
