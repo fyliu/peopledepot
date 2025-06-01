@@ -8,24 +8,30 @@ on:
       - submitted
 
 jobs:
-  set-status:
+  review:
     runs-on: ubuntu-latest
     steps:
-      - name: Set status to "Needs Review"
+      - name: Set review status and assignee
         uses: actions/github-script@v6
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const { context, github } = require('@actions/github');
-            const projectFieldName = "Status"; // Replace with your actual field name
-            const projectFieldValue = "PR Needs review (automated column, do not place items here manually)"; // Replace with your desired value
-
-            // Get the pull request number
-            const pullRequestNumber = context.payload.pull_request.number;
-
-            // Get the repository details
-            const owner = context.repo.owner;
-            const repo = context.repo.repo;
-
-            // Update the project field (replace with your specific logic for updating the field)
-            // Example: Use GitHub API to update the field in your project
-            console.log(`Pull request #${pullRequestNumber} in ${owner}/${repo} set to "${projectFieldValue}"`);
+            github.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.pullRequest.number,
+              state: 'NEEDS_REVIEW'
+            })
+            github.issues.updateAssignees({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.pullRequest.number,
+              assignees: [context.pullRequest.user.login]
+            })
+            github.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.pullRequest.number,
+              state: 'open',
+              labels: ['needs-review']
+            })
