@@ -15,23 +15,82 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const { context, github } = require('@actions/github');
-            const projectFieldName = "Status"; // Replace with your actual field name
-            const projectFieldValue = "PR Needs review (automated column, do not place items here manually)"; // Replace with your desired value
 
-            // Get the pull request number
-            const pullRequestNumber = context.payload.pull_request.number;
+const repo = context.repo.repo;
+const pullRequestNumber = context.payload.pull_request.number;
 
-            // Get the repository details
-            const owner = context.repo.owner;
-            const repo = context.repo.repo;
+// The field name and value you want to set
+const projectFieldName = "Status";
+const projectFieldValue = "PR Needs review (automated column, do not place items here manually)";
 
-            // Ensure you have the necessary permissions and API token to perform this action
-            await github.rest.issues.update({
-              owner,
-              repo,
-              issue_number: pullRequestNumber,
-              labels: ["Needs Review"], // Example label to indicate the status
-            });
+// Step 1: Find the project and item ID for the PR
+const pr = await github.rest.pulls.get({
+  owner,
+  repo,
+  pull_number: pullRequestNumber,
+});
+const prNodeId = pr.data.node_id;
 
-            console.log(`Pull request #${pullRequestNumber} in ${owner}/${repo} set to "${projectFieldValue}"`);
+// Step 2: Find the project item for this PR (requires GraphQL query)
+const query = `
+  query($prId: ID!) {
+    node(id: $prId) {
+      ... on PullRequest {
+        projectItems(first: 10) {
+          nodes {
+            id
+            project {
+              id
+              title
+            }
+            fieldValues(first: 10) {
+              nodes {
+                field {
+                  name
+                  id
+                }
+                value
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+const result = await github.graphql(query, { prId: prNodeId });
+const item = result.node.projectItems.nodes.find(i => i.project.title === "YOUR_PROJECT_NAME");
+if (!item) {
+  throw new Error("PR is not in the project. You may need to automate addition first.");
+}
+
+// Step 3: Find the field ID for "Status"
+const statusField = item.fieldValues.nodes.find(fv => fv.field.name === projectFieldName);
+if (!statusField) {
+  throw new Error(`No field named "${projectFieldName}" found.`);
+}
+
+// Step 4: Update the Status field for the item
+const mutation = `
+  mutation($itemId: ID!, $fieldId: ID!, $value: String!) {
+    updateProjectV2ItemFieldValue(
+      input: {
+        projectId: "${item.project.id}",
+        itemId: $itemId,
+        fieldId: $fieldId,
+        value: { text: $value }
+      }
+    ) {
+      projectV2Item {
+        id
+      }
+    }
+  }
+`;
+await github.graphql(mutation, {
+  itemId: item.id,
+  fieldId: statusField.field.id,
+  value: projectFieldValue,
+});
+
+console.log(`PR #${pullRequestNumber} status set to "${projectFieldValue}"`);
