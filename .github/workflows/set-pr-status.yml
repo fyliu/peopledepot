@@ -13,7 +13,7 @@ jobs:
         with:
           github-token: ${{ secrets.PROJECT_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
-            const desiredStatus = core.getInput("status") || "Needs Review";
+            const desiredStatus = "${{ inputs.status || 'Needs Review' }}";
             const prNodeId = context.payload.pull_request.node_id;
 
             // 1. Get project items and their fields
@@ -78,9 +78,7 @@ jobs:
                       value: { singleSelectOptionId: $optionId }
                     }
                   ) {
-                    projectV2Item {
-                      id
-                    }
+                    projectV2Item { id }
                   }
                 }
               `;
@@ -94,5 +92,5 @@ jobs:
 
               core.info(`Updated PR status in project "${item.project.title}" to "${desiredStatus}"`);
             }
-        with:
-          status: "PR Needs review (automated column, do not place items here manually)"
+        env:
+          STATUS: PR Needs review (automated column, do not place items here manually)
