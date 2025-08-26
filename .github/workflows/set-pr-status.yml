@@ -11,7 +11,7 @@ jobs:
       - name: Set PR Status
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.PROJECT_TOKEN || secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.PROJECT_TOKEN }}
           script: |
             const desiredStatus = core.getInput("status") || "Needs Review";
             const prNodeId = context.payload.pull_request.node_id;
