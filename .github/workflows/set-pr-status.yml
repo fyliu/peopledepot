@@ -1,44 +1,45 @@
-name: Set PR Status
+name: Add PR to Project and Set Status
 
 on:
   pull_request:
     types: [opened, reopened, ready_for_review]
 
 jobs:
-  set-status:
+  add-to-project:
     runs-on: ubuntu-latest
     steps:
-      - name: Set PR Status
+      - name: Add PR to project and set status
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.PROJECT_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
-            const desiredStatus = core.getInput("status") || "Needs Review";
-            const prNodeId = context.payload.pull_request.node_id;
+            const prefix = process.env.STATUS_PREFIX || "PR Needs Review";
+            const projectId = process.env.PROJECT_ID;  // set in repo/org secrets
+            const prId = context.payload.pull_request.node_id;
 
-            // 1. Get project items and their fields
-            const query = `
-              query($prId: ID!) {
-                node(id: $prId) {
-                  ... on PullRequest {
-                    projectItems(first: 10) {
+            // 1. Add PR to project
+            const addMutation = `
+              mutation($projectId: ID!, $prId: ID!) {
+                addProjectV2ItemById(input: { projectId: $projectId, contentId: $prId }) {
+                  item { id }
+                }
+              }
+            `;
+            const addRes = await github.graphql(addMutation, { projectId, prId });
+            const itemId = addRes.addProjectV2ItemById.item.id;
+            core.info(`✅ PR added to project with item ID ${itemId}`);
+
+            // 2. Get project fields
+            const fieldsQuery = `
+              query($projectId: ID!) {
+                node(id: $projectId) {
+                  ... on ProjectV2 {
+                    fields(first: 50) {
                       nodes {
-                        id
-                        project {
+                        ... on ProjectV2SingleSelectField {
                           id
-                          title
-                          fields(first: 20) {
-                            nodes {
-                              ... on ProjectV2SingleSelectField {
-                                id
-                                name
-                                options {
-                                  id
-                                  name
-                                }
-                              }
-                            }
-                          }
+                          name
+                          options { id name }
                         }
                       }
                     }
@@ -46,53 +47,43 @@ jobs:
                 }
               }
             `;
+            const { node: project } = await github.graphql(fieldsQuery, { projectId });
 
-            const { node } = await github.graphql(query, { prId: prNodeId });
-
-            if (!node.projectItems.nodes.length) {
-              core.warning("PR is not in any project, skipping");
+            const statusField = project.fields.nodes.find(f => f.name === "Status");
+            if (!statusField) {
+              core.warning("⚠️ No Status field found in project");
               return;
             }
 
-            for (const item of node.projectItems.nodes) {
-              const statusField = item.project.fields.nodes.find(f => f.name === "Status");
-              if (!statusField) {
-                core.warning(`No "Status" field found in project ${item.project.title}`);
-                continue;
-              }
-
-              const option = statusField.options.find(o => o.name === desiredStatus);
-              if (!option) {
-                core.warning(`No "${desiredStatus}" option in project ${item.project.title}`);
-                continue;
-              }
-
-              // 2. Update to the requested status
-              const mutation = `
-                mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
-                  updateProjectV2ItemFieldValue(
-                    input: {
-                      projectId: $projectId
-                      itemId: $itemId
-                      fieldId: $fieldId
-                      value: { singleSelectOptionId: $optionId }
-                    }
-                  ) {
-                    projectV2Item {
-                      id
-                    }
-                  }
-                }
-              `;
-
-              await github.graphql(mutation, {
-                projectId: item.project.id,
-                itemId: item.id,
-                fieldId: statusField.id,
-                optionId: option.id
-              });
-
-              core.info(`Updated PR status in project "${item.project.title}" to "${desiredStatus}"`);
+            const option = statusField.options.find(o => o.name.startsWith(prefix));
+            if (!option) {
+              core.warning(`⚠️ No status option starting with "${prefix}"`);
+              return;
             }
-        with:
-          status: "PR Needs review (automated column, do not place items here manually)"
+
+            // 3. Set PR Status
+            const updateMutation = `
+              mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+                updateProjectV2ItemFieldValue(
+                  input: {
+                    projectId: $projectId
+                    itemId: $itemId
+                    fieldId: $fieldId
+                    value: { singleSelectOptionId: $optionId }
+                  }
+                ) {
+                  projectV2Item { id }
+                }
+              }
+            `;
+            await github.graphql(updateMutation, {
+              projectId,
+              itemId,
+              fieldId: statusField.id,
+              optionId: option.id
+            });
+
+            core.info(`✅ Set PR status to "${option.name}"`);
+        env:
+          PROJECT_ID: "PVT_kwHOABGzqc4A5zkE"
+          STATUS_PREFIX: "PR Needs Review"
