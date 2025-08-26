@@ -1,4 +1,4 @@
-name: Set PR Status
+name: Set PR Status After Board Assignment
 
 on:
   pull_request:
@@ -8,15 +8,14 @@ jobs:
   set-status:
     runs-on: ubuntu-latest
     steps:
-      - name: Set PR Status
+      - name: Wait until PR is added to a project
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.PROJECT_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
-            const desiredStatus = core.getInput("status") || "Needs Review";
+            const prefix = process.env.STATUS_PREFIX || "PR Needs Review";
             const prNodeId = context.payload.pull_request.node_id;
 
-            // 1. Get project items and their fields
             const query = `
               query($prId: ID!) {
                 node(id: $prId) {
@@ -27,15 +26,12 @@ jobs:
                         project {
                           id
                           title
-                          fields(first: 20) {
+                          fields(first: 50) {
                             nodes {
                               ... on ProjectV2SingleSelectField {
                                 id
                                 name
-                                options {
-                                  id
-                                  name
-                                }
+                                options { id name }
                               }
                             }
                           }
@@ -47,27 +43,39 @@ jobs:
               }
             `;
 
-            const { node } = await github.graphql(query, { prId: prNodeId });
+            // Poll up to 5 minutes
+            let projectItems = [];
+            for (let i = 0; i < 60; i++) {
+              const { node } = await github.graphql(query, { prId: prNodeId });
+              projectItems = node.projectItems.nodes;
+              if (projectItems.length > 0) {
+                core.info(`✅ PR has been added to ${projectItems.length} project(s)`);
+                break;
+              }
+              core.info("⌛ Waiting for board automation...");
+              await new Promise(r => setTimeout(r, 5000));
+            }
 
-            if (!node.projectItems.nodes.length) {
-              core.warning("PR is not in any project, skipping");
+            if (projectItems.length === 0) {
+              core.warning("⚠️ PR was never added to a project (timeout)");
               return;
             }
 
-            for (const item of node.projectItems.nodes) {
+            // Update all projects
+            for (const item of projectItems) {
               const statusField = item.project.fields.nodes.find(f => f.name === "Status");
               if (!statusField) {
-                core.warning(`No "Status" field found in project ${item.project.title}`);
+                core.warning(`⚠️ No Status field found in project "${item.project.title}"`);
                 continue;
               }
 
-              const option = statusField.options.find(o => o.name === desiredStatus);
+              // Look for an option starting with "PR Needs Review"
+              const option = statusField.options.find(o => o.name.startsWith(prefix));
               if (!option) {
-                core.warning(`No "${desiredStatus}" option in project ${item.project.title}`);
+                core.warning(`⚠️ No status option starting with "${prefix}" in project "${item.project.title}"`);
                 continue;
               }
 
-              // 2. Update to the requested status
               const mutation = `
                 mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
                   updateProjectV2ItemFieldValue(
@@ -78,9 +86,7 @@ jobs:
                       value: { singleSelectOptionId: $optionId }
                     }
                   ) {
-                    projectV2Item {
-                      id
-                    }
+                    projectV2Item { id }
                   }
                 }
               `;
@@ -92,7 +98,7 @@ jobs:
                 optionId: option.id
               });
 
-              core.info(`Updated PR status in project "${item.project.title}" to "${desiredStatus}"`);
+              core.info(`✅ Set status in "${item.project.title}" to "${option.name}"`);
             }
-        with:
-          status: "PR Needs review (automated column, do not place items here manually)"
+        env:
+          STATUS_PREFIX: "PR Needs Review"
