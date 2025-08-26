@@ -1,44 +1,88 @@
-name: Set PR Status
+name: Add PR to Project and Set Status
 
 on:
   pull_request:
     types: [opened, reopened, ready_for_review]
 
 jobs:
-  set-status:
+  add-to-project:
     runs-on: ubuntu-latest
     steps:
-      - name: Set PR Status
+      - name: Add PR to project and set status
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.PROJECT_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
-            const desiredStatus = core.getInput("status") || "Needs Review";
-            const prNodeId = context.payload.pull_request.node_id;
+            const prefix = process.env.STATUS_PREFIX || "PR Needs Review";
+            const projectId = process.env.PROJECT_ID;  // set in repo/org secrets
+            const excludePattern = process.env.EXCLUDE_STATUS_REGEX || "automated column";
+            const excludeRe = new RegExp(excludePattern, "i");
+            const prId = context.payload.pull_request.node_id;
 
-            // 1. Get project items and their fields
-            const query = `
-              query($prId: ID!) {
-                node(id: $prId) {
-                  ... on PullRequest {
-                    projectItems(first: 10) {
-                      nodes {
-                        id
-                        project {
+            core.info(`🔎 Matching status prefix (case-insensitive): "${prefix}"`);
+            core.info(`🚫 Excluding statuses matching: /${excludePattern}/i`);
+
+            // 1) (Idempotently) add PR to project; fall back to finding existing item if it already exists
+            let itemId = null;
+            const addMutation = `
+              mutation($projectId: ID!, $prId: ID!) {
+                addProjectV2ItemById(input: { projectId: $projectId, contentId: $prId }) {
+                  item { id }
+                }
+              }
+            `;
+            try {
+              const addRes = await github.graphql(addMutation, { projectId, prId });
+              itemId = addRes.addProjectV2ItemById.item.id;
+              core.info(`✅ PR added to project with item ID ${itemId}`);
+            } catch (e) {
+              const msg = String(e);
+              if (/already exists/i.test(msg) || /content.*already.*in.*project/i.test(msg)) {
+                core.info("ℹ️ PR already in project. Locating existing project item...");
+              } else {
+                core.warning(`⚠️ addProjectV2ItemById failed: ${msg}`);
+              }
+            }
+
+            if (!itemId) {
+              // Find the item id by scanning PR's project items for this project
+              const findItemQuery = `
+                query($prId: ID!) {
+                  node(id: $prId) {
+                    ... on PullRequest {
+                      projectItems(first: 50) {
+                        nodes {
                           id
-                          title
-                          fields(first: 20) {
-                            nodes {
-                              ... on ProjectV2SingleSelectField {
-                                id
-                                name
-                                options {
-                                  id
-                                  name
-                                }
-                              }
-                            }
-                          }
+                          project { id title }
+                        }
+                      }
+                    }
+                  }
+                }
+              `;
+              const r = await github.graphql(findItemQuery, { prId });
+              const items = r.node?.projectItems?.nodes ?? [];
+              const match = items.find(n => n.project?.id === projectId);
+              if (!match) {
+                core.setFailed("❌ Could not determine project item ID for this PR.");
+                return;
+              }
+              itemId = match.id;
+              core.info(`🔁 Found existing project item ID ${itemId}`);
+            }
+
+            // 2) Get project fields + name
+            const fieldsQuery = `
+              query($projectId: ID!) {
+                node(id: $projectId) {
+                  ... on ProjectV2 {
+                    title
+                    fields(first: 100) {
+                      nodes {
+                        ... on ProjectV2SingleSelectField {
+                          id
+                          name
+                          options { id name }
                         }
                       }
                     }
@@ -46,53 +90,66 @@ jobs:
                 }
               }
             `;
+            const { node: project } = await github.graphql(fieldsQuery, { projectId });
+            core.info(`🎯 Project: ${project.title}`);
 
-            const { node } = await github.graphql(query, { prId: prNodeId });
-
-            if (!node.projectItems.nodes.length) {
-              core.warning("PR is not in any project, skipping");
+            // 3) Find the "Status" field
+            const statusField = (project.fields.nodes || []).find(f => f?.name === "Status");
+            if (!statusField) {
+              core.setFailed("❌ No 'Status' field found in the project.");
               return;
             }
 
-            for (const item of node.projectItems.nodes) {
-              const statusField = item.project.fields.nodes.find(f => f.name === "Status");
-              if (!statusField) {
-                core.warning(`No "Status" field found in project ${item.project.title}`);
-                continue;
-              }
+            // 4) Choose a status option:
+            //    - name starts with prefix (case-insensitive)
+            //    - and does NOT match exclude regex
+            const prefixLower = prefix.toLowerCase();
+            const allOptions = statusField.options || [];
+            const candidates = allOptions
+              .filter(o => typeof o?.name === "string")
+              .filter(o => o.name.toLowerCase().startsWith(prefixLower))
+              .filter(o => !excludeRe.test(o.name));
 
-              const option = statusField.options.find(o => o.name === desiredStatus);
-              if (!option) {
-                core.warning(`No "${desiredStatus}" option in project ${item.project.title}`);
-                continue;
-              }
-
-              // 2. Update to the requested status
-              const mutation = `
-                mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
-                  updateProjectV2ItemFieldValue(
-                    input: {
-                      projectId: $projectId
-                      itemId: $itemId
-                      fieldId: $fieldId
-                      value: { singleSelectOptionId: $optionId }
-                    }
-                  ) {
-                    projectV2Item {
-                      id
-                    }
-                  }
-                }
-              `;
-
-              await github.graphql(mutation, {
-                projectId: item.project.id,
-                itemId: item.id,
-                fieldId: statusField.id,
-                optionId: option.id
-              });
-
-              core.info(`Updated PR status in project "${item.project.title}" to "${desiredStatus}"`);
+            if (!candidates.length) {
+              core.warning(`⚠️ No status option starting with "${prefix}" (case-insensitive) after excluding /${excludePattern}/i.`);
+              core.info("📋 All available 'Status' options:");
+              for (const o of allOptions) core.info(`- ${o.name}`);
+              // Not failing the job; just exiting to avoid setting a wrong status.
+              return;
             }
-        with:
-          status: "PR Needs review (automated column, do not place items here manually)"
+
+            // Prefer the shortest name (e.g., "PR Needs Review" over "PR Needs Review - Something")
+            candidates.sort((a, b) => a.name.length - b.name.length || a.name.localeCompare(b.name));
+            const chosen = candidates[0];
+
+            core.info("✅ Matching candidates (after exclusions):");
+            for (const c of candidates) core.info(`- ${c.name}`);
+            core.info(`🏁 Chosen status: "${chosen.name}" (id: ${chosen.id})`);
+
+            // 5) Set PR Status
+            const updateMutation = `
+              mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+                updateProjectV2ItemFieldValue(
+                  input: {
+                    projectId: $projectId
+                    itemId: $itemId
+                    fieldId: $fieldId
+                    value: { singleSelectOptionId: $optionId }
+                  }
+                ) {
+                  projectV2Item { id }
+                }
+              }
+            `;
+            await github.graphql(updateMutation, {
+              projectId,
+              itemId,
+              fieldId: statusField.id,
+              optionId: chosen.id
+            });
+
+            core.info(`🎉 Set PR status to "${chosen.name}"`);
+        env:
+          PROJECT_ID: "PVT_kwHOABGzqc4A5zkE"   # your project node ID
+          STATUS_PREFIX: "PR Needs Review"      # case-insensitive prefix
+          EXCLUDE_STATUS_REGEX: "automated column"  # case-insensitive regex to skip automated columns
