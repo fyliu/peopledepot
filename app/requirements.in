@@ -3,7 +3,7 @@ django-extensions
 django-linear-migrations
 django-phonenumber-field[phonenumbers]
 django-timezone-field
-djangorestframework
+djangorestframework==3.15.2
 drf-jwt
 drf-spectacular
 markdown
