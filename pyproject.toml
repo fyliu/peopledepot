@@ -1,2 +1,2 @@
 [tool.ruff.lint]
-select = [ "PTH" ]
+select = ["PTH"]

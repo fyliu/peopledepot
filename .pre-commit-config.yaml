@@ -142,6 +142,11 @@ repos:
           - mdformat-mkdocs[recommended]>=5.1.4
           - mdformat-gfm-alerts>=2.0.0
 
+  - repo: https://github.com/pappasam/toml-sort
+    rev: v0.24.3
+    hooks:
+      - id: toml-sort-fix
+
   - repo: https://github.com/astral-sh/uv-pre-commit
     # uv version.
     rev: 0.9.8
