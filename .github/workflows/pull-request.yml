@@ -1,6 +1,7 @@
+---
 name: PR Checks
 
-on:
+"on":
   pull_request:
 
 jobs:
@@ -12,4 +13,5 @@ jobs:
         uses: actions/checkout@v4
       - name: Validate mkdocs
         run: |
-          docker run --rm -v $(pwd):/app hackforlaops/mkdocs:latest mkdocs build -d /tmp --strict
+          docker run --rm -v $(pwd):/app hackforlaops/mkdocs:latest mkdocs \
+          build -d /tmp --strict

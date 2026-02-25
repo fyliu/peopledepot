@@ -1,3 +1,4 @@
+---
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 default_install_hook_types: [pre-commit, pre-push]
@@ -75,7 +76,8 @@ repos:
     hooks:
       - id: flake8
         exclude: "^app/core/migrations/|^app/data/migrations/|^app/core/scripts"
-        args: [--max-line-length=119, --max-complexity=4, --pytest-fixture-no-parentheses, --extend-ignore=EXE002]
+        args: [--max-line-length=119, --max-complexity=4,
+               --pytest-fixture-no-parentheses, --extend-ignore=EXE002]
         additional_dependencies:
           [
             flake8-bugbear,
@@ -142,6 +144,11 @@ repos:
           - mdformat-mkdocs[recommended]>=5.1.4
           - mdformat-gfm-alerts>=2.0.0
 
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: v1.37.1
+    hooks:
+      - id: yamllint
+
   - repo: https://github.com/pappasam/toml-sort
     rev: v0.24.3
     hooks:
@@ -153,7 +160,8 @@ repos:
     hooks:
       # Compile requirements
       - id: pip-compile
-        args: [app/requirements.in, -o, app/requirements.txt, --no-header, --upgrade]
+        args: [app/requirements.in, -o, app/requirements.txt, --no-header,
+               --upgrade]
         files: ^app/requirements\.in$
 
   - repo: local

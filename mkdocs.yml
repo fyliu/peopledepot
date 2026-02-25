@@ -1,3 +1,4 @@
+---
 site_name: People Depot Docs
 repo_url: https://github.com/hackforla/peopledepot
 repo_name: hackforla/peopledepot
@@ -59,8 +60,8 @@ markdown_extensions:
       permalink: true
 
 validation:
-  absolute_links: relative_to_docs # MkDocs 1.6
-  anchors: warn # MkDocs 1.6
+  absolute_links: relative_to_docs  # MkDocs 1.6
+  anchors: warn  # MkDocs 1.6
   omitted_files: warn
   unrecognized_links: warn
 
