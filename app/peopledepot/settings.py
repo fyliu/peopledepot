@@ -79,9 +79,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # 3rd party
-    "django_extensions",
+    # "django_extensions",
     "rest_framework",
-    "drf_spectacular",
+    # "drf_spectacular",
     "phonenumber_field",
     "timezone_field",
     "django_linear_migrations",
@@ -89,6 +89,13 @@ INSTALLED_APPS = [
     "core",
     "data",
 ]
+
+if DEBUG:
+    INSTALLED_APPS += [
+        "django_extensions",
+        # "django_linear_migrations",
+        "drf_spectacular",
+    ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

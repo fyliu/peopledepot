@@ -21,12 +21,12 @@ COPY Roboto-Regular.ttf /root/.fonts/
 RUN fc-cache -f
 
 # install dependencies
-COPY ./requirements.txt .
+COPY ./requirements-aws.txt .
 # hadolint ignore=DL3042
 RUN \
   --mount=type=cache,target=/root/.cache \
-  pip install uv==0.1.15 \
-  && uv pip install --system -r requirements.txt
+  pip install uv==0.11.21 \
+  && uv pip install --system -r requirements-aws.txt
 
 # copy entrypoint.sh
 COPY ./entrypoint.sh .

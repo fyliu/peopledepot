@@ -1,7 +1,7 @@
 django~=4.2.27
-django-extensions
 django-phonenumber-field[phonenumbers]
 django-timezone-field
 djangorestframework
 drf-jwt
+psycopg2-binary
 tzdata
