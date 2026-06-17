@@ -1,10 +1,5 @@
 from django.contrib.auth import get_user_model
 from django.db.models.deletion import ProtectedError
-from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import OpenApiExample
-from drf_spectacular.utils import OpenApiParameter
-from drf_spectacular.utils import extend_schema
-from drf_spectacular.utils import extend_schema_view
 from rest_framework import mixins
 from rest_framework import status
 from rest_framework import viewsets
@@ -14,6 +9,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
+from ..decorators import OpenApiExample
+from ..decorators import OpenApiParameter
+from ..decorators import OpenApiTypes
+from ..decorators import extend_schema
+from ..decorators import extend_schema_view
 from ..models import Accomplishment
 from ..models import Affiliate
 from ..models import Affiliation

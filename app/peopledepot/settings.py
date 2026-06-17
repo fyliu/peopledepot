@@ -79,12 +79,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # 3rd party
-    # "django_extensions",
     "rest_framework",
-    # "drf_spectacular",
     "phonenumber_field",
     "timezone_field",
-    "django_linear_migrations",
     # Local
     "core",
     "data",
@@ -93,7 +90,7 @@ INSTALLED_APPS = [
 if DEBUG:
     INSTALLED_APPS += [
         "django_extensions",
-        # "django_linear_migrations",
+        "django_linear_migrations",
         "drf_spectacular",
     ]
 
@@ -197,8 +194,10 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_jwt.authentication.JSONWebTokenAuthentication",
     ),
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
+
+if DEBUG:
+    REST_FRAMEWORK["DEFAULT_SCHEMA_CLASS"] = "drf_spectacular.openapi.AutoSchema"
 
 JWT_AUTH = {
     "JWT_PAYLOAD_GET_USERNAME_HANDLER": "core.utils.jwt.get_username_from_payload_handler",
