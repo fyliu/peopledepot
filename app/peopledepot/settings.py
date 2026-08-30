@@ -85,6 +85,7 @@ INSTALLED_APPS = [
     "phonenumber_field",
     "timezone_field",
     "django_linear_migrations",
+    "recurrence",
     # Local
     "core",
     "data",

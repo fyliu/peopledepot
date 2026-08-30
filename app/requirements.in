@@ -2,6 +2,7 @@ django~=4.2.27
 django-extensions
 django-linear-migrations
 django-phonenumber-field[phonenumbers]
+django-recurrence
 django-timezone-field
 djangorestframework
 drf-jwt
