@@ -9,6 +9,7 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 from django.db.models import Q
 from phonenumber_field.modelfields import PhoneNumberField
+from recurrence.fields import RecurrenceField
 from timezone_field import TimeZoneField
 
 
@@ -243,7 +244,10 @@ class Event(AbstractBaseModel):
     """
 
     name = models.CharField(max_length=255)
-    start_time = models.TimeField("Start", null=True, blank=True)
+    start_time = models.DateTimeField("Start", null=True, blank=True)
+    timezone = models.CharField(max_length=50, default="America/Los_Angeles")
+    recurrence = RecurrenceField(blank=True)
+
     duration_in_min = models.IntegerField(null=True, blank=True)
     video_conference_url = models.URLField(blank=True)
     additional_info = models.TextField(blank=True)
