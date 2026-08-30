@@ -29,7 +29,7 @@ COPY --chown=app:app ./requirements.txt .
 # hadolint ignore=DL3042
 RUN \
   --mount=type=cache,target=/root/.cache \
-  pip install uv==0.1.15 \
+  pip install uv==0.12.7 \
   && uv pip install --system -r requirements.txt
 
 # copy entrypoint.sh
