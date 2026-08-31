@@ -224,10 +224,14 @@ def test_user_actions(client_name, action, endpoint, payload, expected_status, r
 
 def test_create_event(auth_client, project):
     """Test that we can create an event"""
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
 
     payload = {
         "name": "Test Weekly team meeting",
-        "start_time": "18:00:00",
+        "start_time": datetime(
+            2026, 9, 1, 18, 0, 0, tzinfo=ZoneInfo("America/Los_Angeles")
+        ),
         "duration_in_min": 60,
         "video_conference_url": "https://zoom.com/link",
         "additional_info": "Test description",
