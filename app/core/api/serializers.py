@@ -669,6 +669,13 @@ class UserCheckSerializer(serializers.ModelSerializer):
             "project",
         )
         read_only_fields = ("uuid", "created_at", "updated_at")
+        validators = [
+            serializers.UniqueTogetherValidator(
+                queryset=UserCheck.objects.all(),
+                fields=["user", "check_type"],
+                message="A UserCheck with this user and check_type already exists in this scope.",
+            )
+        ]
 
 
 class UserEmploymentHistorySerializer(serializers.ModelSerializer):
