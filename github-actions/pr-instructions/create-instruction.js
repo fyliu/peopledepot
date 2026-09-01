@@ -12,7 +12,7 @@ const fs = require('fs');
 async function main({ g, c }) {
     github = g;
     context = c;
-    return encodeURI(await compositeInstruction());   
+    return encodeURI(await compositeInstruction());
 }
 
 function formatHeaderInstruction() {
@@ -28,25 +28,25 @@ function formatPullComment(instruction) {
     return completedInstructions;
 }
 
-function formatContribComment(instruction){
+function formatContribComment(instruction) {
     const path = './github-actions/pr-instructions/pr-instructions-contrib-template.md'
     const text = fs.readFileSync(path).toString('utf-8');
     const completedInstructions = text.replace('${previewContribInstructions}', instruction);
     return completedInstructions;
 }
 
-function createPullInstruction(){
+function createPullInstruction() {
     const nameOfCollaborator = context.payload.pull_request.head.repo.owner.login;
     const nameOfFromBranch = context.payload.pull_request.head.ref;
     const nameOfIntoBranch = context.payload.pull_request.base.ref;
     const cloneURL = context.payload.pull_request.head.repo.clone_url;
     const pullInstructionString =
-`git checkout -b ${nameOfCollaborator}-${nameOfFromBranch} ${nameOfIntoBranch}
+        `git checkout -b ${nameOfCollaborator}-${nameOfFromBranch} ${nameOfIntoBranch}
 git pull ${cloneURL} ${nameOfFromBranch}`
     return pullInstructionString;
 }
 
-function createContribInstruction(){
+function createContribInstruction() {
     const nameOfCollaborator = context.payload.pull_request.head.repo.owner.login;
     const nameOfFromBranch = context.payload.pull_request.head.ref;
     const previewContribURL = `https://github.com/${nameOfCollaborator}/peopledepot/blob/${nameOfFromBranch}/CONTRIBUTING.md`
