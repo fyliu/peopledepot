@@ -36,13 +36,8 @@ function formatContribComment(instruction) {
 }
 
 function createPullInstruction() {
-    const nameOfCollaborator = context.payload.pull_request.head.repo.owner.login;
-    const nameOfFromBranch = context.payload.pull_request.head.ref;
-    const nameOfIntoBranch = context.payload.pull_request.base.ref;
-    const cloneURL = context.payload.pull_request.head.repo.clone_url;
-    const pullInstructionString =
-        `git checkout -b ${nameOfCollaborator}-${nameOfFromBranch} ${nameOfIntoBranch}
-git pull ${cloneURL} ${nameOfFromBranch}`
+    const prNumber = context.payload.pull_request.number;
+    const pullInstructionString = `git pr ${prNumber}`
     return pullInstructionString;
 }
 
