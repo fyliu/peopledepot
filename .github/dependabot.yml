@@ -24,6 +24,11 @@ updates:
       docker-compose-deps:
         patterns:
           - "*"
+    allow:
+      - dependency-name: "postgres"
+      update-types:
+        - "version-update:semver-minor"
+        - "version-update:semver-patch"
   - package-ecosystem: "pip"
     directory: "/app/"
     schedule:
