@@ -53,7 +53,7 @@ jobs:
                       const artifact = ${{ steps.artifact.outputs.result }};
 
                       const script = require('./github-actions/pr-instructions/post-comment.js')
-                      script({g: github, c: context}, artifact)
+                      await script({github, context}, artifact)
 
     Last-Workflow-Failure:
         runs-on: ubuntu-latest
